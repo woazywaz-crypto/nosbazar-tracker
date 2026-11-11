@@ -33,6 +33,12 @@
   th { color: var(--muted); font-weight: 500; font-size: .85rem; }
   .empty { color: var(--muted); padding: 40px 0; text-align: center; }
   .scroll { overflow-x: auto; }
+  h2 { font-size: 1.15rem; margin: 36px 0 4px; }
+  #filter { background: var(--panel); color: var(--text); border: 1px solid var(--line);
+            border-radius: 6px; padding: 8px 10px; font-size: 1rem; width: 100%; max-width: 360px; margin: 8px 0; }
+  #overview a { color: var(--gold); cursor: pointer; text-decoration: none; }
+  #overview td:nth-child(2) { color: var(--muted); text-align: left; }
+  .none { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -56,6 +62,14 @@
     <thead><tr><th>Date</th><th>Prix mini</th><th>Moyenne top 10</th><th>Offres</th><th>Quantité</th></tr></thead>
     <tbody id="rows"></tbody>
   </table></div>
+
+  <h2>Vue d'ensemble</h2>
+  <p class="sub">Dernier relevé de chaque objet. Clique sur un nom pour voir son graphique. « Pas en vente » : aucune offre au bazar au moment du relevé.</p>
+  <input id="filter" type="search" placeholder="Filtrer (nom ou catégorie)…">
+  <div class="scroll"><table>
+    <thead><tr><th>Objet</th><th>Catégorie</th><th>Prix mini</th><th>Moyenne top 10</th><th>Offres</th><th>Relevé</th></tr></thead>
+    <tbody id="overview"></tbody>
+  </table></div>
 </main>
 
 <script>
@@ -76,6 +90,7 @@ function parseCSV(text) {
       min: r.prix_min === "" ? null : +r.prix_min,
       avg: r.prix_moyen_top === "" ? null : +r.prix_moyen_top,
       offres: +r.nb_offres, qte: +r.quantite_visible,
+      cat: r.categorie || "Suivi principal",
     };
   });
 }
@@ -128,16 +143,41 @@ function render() {
   });
 }
 
+function renderOverview(order) {
+  const q = (document.getElementById("filter").value || "").toLowerCase();
+  const last = new Map();
+  for (const r of data) last.set(r.vnum, r);
+  const rows = [...last.values()]
+    .filter(r => !q || r.objet.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q))
+    .sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat) || a.objet.localeCompare(b.objet, "fr"));
+  document.getElementById("overview").innerHTML = rows.map(r =>
+    `<tr><td><a data-v="${r.vnum}">${r.objet}</a></td><td>${r.cat}</td>` +
+    (r.min === null ? `<td colspan="3" class="none">Pas en vente</td>` :
+      `<td>${fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td>`) +
+    `<td>${fmtDate(r.date)}</td></tr>`).join("");
+  document.querySelectorAll("#overview a").forEach(a => a.onclick = () => {
+    const sel = document.getElementById("item"); sel.value = a.dataset.v; render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
 fetch("data/prices.csv?t=" + Date.now()).then(r => r.text()).then(text => {
   data = parseCSV(text);
   const sub = document.getElementById("sub");
   if (!data.length) { sub.textContent = "Aucun relevé pour l'instant : le premier arrivera au prochain passage du robot."; return; }
   sub.textContent = `Serveur ${data.at(-1).serveur} · dernier relevé le ${fmtDate(data.at(-1).date)} · ${data.length} relevés`;
-  const items = [...new Map(data.map(r => [r.vnum, r.objet])).entries()];
+  const items = [...new Map(data.map(r => [r.vnum, { n: r.objet, c: r.cat }])).entries()];
+  const groups = {};
+  for (const [v, x] of items) (groups[x.c] = groups[x.c] || []).push([v, x.n]);
   const select = document.getElementById("item");
-  select.innerHTML = items.map(([v, n]) => `<option value="${v}">${n}</option>`).join("");
+  const order = Object.keys(groups).sort((a, b) => (a === "Suivi principal" ? -1 : b === "Suivi principal" ? 1 : a.localeCompare(b, "fr")));
+  select.innerHTML = order.map(c => `<optgroup label="${c}">` +
+    groups[c].sort((a, b) => a[1].localeCompare(b[1], "fr")).map(([v, n]) => `<option value="${v}">${n}</option>`).join("") +
+    `</optgroup>`).join("");
   select.onchange = render;
   render();
+  renderOverview(order);
+  document.getElementById("filter").oninput = () => renderOverview(order);
 });
 </script>
 </body>

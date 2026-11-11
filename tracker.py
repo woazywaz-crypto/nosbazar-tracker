@@ -1,11 +1,19 @@
 """Relève les prix du NosBazar (via l'API de nosbazar.com) et les ajoute à un CSV.
 
+- Chaque objet de items.json peut avoir plusieurs numéros (vnums) : versions
+  différentes du même objet, ou toutes les couleurs d'une même aile. Le prix
+  relevé est le plus bas parmi toutes ces versions.
+- "freq_h": 3  -> relevé à chaque passage (toutes les 3 h)
+  "freq_h": 24 -> relevé une seule fois par jour, au passage de "daily_hour_utc"
+
 Aucune dépendance externe : Python 3.9+ standard suffit.
-Usage : python tracker.py
+Usage : python tracker.py            (relevé normal)
+        FORCE_ALL=1 python tracker.py (tout relever maintenant)
 """
 
 import csv
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -25,12 +33,12 @@ MAX_ATTEMPTS = 3
 
 CSV_HEADER = [
     "date_utc", "serveur", "vnum", "objet",
-    "prix_min", "prix_moyen_top", "nb_offres", "quantite_visible",
+    "prix_min", "prix_moyen_top", "nb_offres", "quantite_visible", "categorie",
 ]
 
 
-def search(server: int, vnum: int) -> list[dict]:
-    """Renvoie la 1re page d'annonces pour un objet, triée par prix croissant."""
+def search(server: int, vnums: list[int]) -> list[dict]:
+    """Renvoie la 1re page d'annonces pour ces numéros d'objet, triée par prix croissant."""
     body = {
         "server": server,
         "filters": {
@@ -41,7 +49,7 @@ def search(server: int, vnum: int) -> list[dict]:
             "rare": 0,
             "upgrade": 0,
             "order": 0,          # 0 = prix croissant
-            "vnum": [vnum],
+            "vnum": vnums[:50],  # l'API accepte 50 numéros au maximum
         },
         "lang": "UK",
     }
@@ -50,7 +58,7 @@ def search(server: int, vnum: int) -> list[dict]:
         data=json.dumps(body).encode(),
         headers={
             "Content-Type": "application/json",
-            "User-Agent": "nosbazar-price-tracker (suivi perso, 1 requete/objet toutes les 3 h)",
+            "User-Agent": "nosbazar-price-tracker (suivi perso, petit volume)",
         },
         method="POST",
     )
@@ -73,14 +81,42 @@ def search(server: int, vnum: int) -> list[dict]:
     return []
 
 
+def item_vnums(item: dict) -> list[int]:
+    if "vnums" in item:
+        return [int(v) for v in item["vnums"]]
+    return [int(item["vnum"])]
+
+
+def is_due(item: dict, config: dict, now: datetime, force: bool) -> bool:
+    if force:
+        return True
+    freq = int(item.get("freq_h", 3))
+    if freq <= 3:
+        return True
+    # relevé quotidien : seulement au passage qui tombe dans le créneau de 3 h
+    start = int(config.get("daily_hour_utc", 6))
+    return start <= now.hour < start + 3
+
+
 def main() -> int:
     config = json.loads(ITEMS_FILE.read_text(encoding="utf-8"))
     server = config["server"]
     server_name = config.get("server_name", str(server))
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    now_dt = datetime.now(timezone.utc)
+    now = now_dt.strftime("%Y-%m-%d %H:%M")
+    force = os.environ.get("FORCE_ALL", "").strip() in ("1", "true", "yes")
+
+    due = [it for it in config["items"] if is_due(it, config, now_dt, force)]
+    print(f"{len(due)} objet(s) à relever sur {len(config['items'])}")
 
     CSV_FILE.parent.mkdir(parents=True, exist_ok=True)
     new_file = not CSV_FILE.exists()
+    if not new_file:
+        # ancien fichier sans la colonne "categorie" : on met l'en-tête à jour
+        lines = CSV_FILE.read_text(encoding="utf-8").splitlines()
+        if lines and "categorie" not in lines[0]:
+            lines[0] = ",".join(CSV_HEADER)
+            CSV_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
     failures = 0
 
     with CSV_FILE.open("a", newline="", encoding="utf-8") as f:
@@ -88,35 +124,38 @@ def main() -> int:
         if new_file:
             writer.writerow(CSV_HEADER)
 
-        for i, item in enumerate(config["items"]):
+        for i, item in enumerate(due):
             if i:
                 time.sleep(PAUSE_BETWEEN_ITEMS)
-            vnum, name = item["vnum"], item["name"]
+            vnums = item_vnums(item)
+            name = item["name"]
+            category = item.get("categorie", "")
+            key = "+".join(str(v) for v in vnums)
             try:
-                listings = search(server, vnum)
+                listings = search(server, vnums)
             except Exception as err:  # on note l'échec et on passe à l'objet suivant
-                print(f"[ERREUR] {name} ({vnum}) : {err}", file=sys.stderr)
+                print(f"[ERREUR] {name} ({key}) : {err}", file=sys.stderr)
                 failures += 1
                 continue
 
-            listings = [l for l in listings if l.get("item_vnum") == vnum]
+            wanted = set(vnums)
+            listings = [l for l in listings if l.get("item_vnum") in wanted]
             prices = sorted(l["bazar_price"] for l in listings)
             if not prices:
                 print(f"[INFO] {name} : aucune offre en vente")
-                writer.writerow([now, server_name, vnum, name, "", "", 0, 0])
+                writer.writerow([now, server_name, key, name, "", "", 0, 0, category])
                 continue
 
             top = prices[:TOP_N]
-            row = [
-                now, server_name, vnum, name,
+            writer.writerow([
+                now, server_name, key, name,
                 prices[0], round(mean(top)), len(listings),
-                sum(l.get("amount", 0) for l in listings),
-            ]
-            writer.writerow(row)
+                sum(l.get("amount", 0) for l in listings), category,
+            ])
             print(f"[OK] {name} : min {prices[0]:,} / moyenne top {len(top)} {round(mean(top)):,}")
 
     # Échec seulement si TOUS les objets ont échoué (le workflow le signalera)
-    return 1 if failures and failures == len(config["items"]) else 0
+    return 1 if due and failures == len(due) else 0
 
 
 if __name__ == "__main__":

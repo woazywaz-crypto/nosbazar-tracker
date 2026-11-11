@@ -2,10 +2,9 @@ name: Relevé des prix NosBazar
 
 on:
   schedule:
-    # Toutes les 3 heures, à la 17e minute (heure UTC).
-    # Les objets "freq_h": 24 ne sont relevés qu'au passage de 06:17 UTC.
+    # Une fois par jour à 14:03 UTC, soit 15h03 en hiver et 16h03 en été (heure de Paris).
     # GitHub peut décaler un peu les lancements planifiés.
-    - cron: "17 */3 * * *"
+    - cron: "3 14 * * *"
   workflow_dispatch:
     inputs:
       tout_relever:

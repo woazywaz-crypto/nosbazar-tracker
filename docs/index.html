@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suivi NosBazar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #15181c; --panel: #1f242a; --line: #353a40; --text: #e8e6e1;
+    --muted: #9aa1a8; --gold: #e2b84a; --blue: #6fa8dc; --down: #6ccf8e; --up: #e57373;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: .9rem; }
+  select { background: var(--panel); color: var(--text); border: 1px solid var(--line);
+           border-radius: 6px; padding: 8px 10px; font-size: 1rem; min-width: 220px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+           gap: 12px; margin: 20px 0; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .tile .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+  .tile .value { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tile .delta { font-size: .85rem; }
+  .down { color: var(--down); } .up { color: var(--up); }
+  .chart { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+           padding: 12px; height: 360px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; font-size: .85rem; }
+  .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+  .scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Suivi des prix NosBazar</h1>
+  <p class="sub" id="sub">Chargement…</p>
+
+  <label for="item" class="sub">Objet : </label>
+  <select id="item"></select>
+
+  <div class="tiles">
+    <div class="tile"><div class="label">Prix mini actuel</div><div class="value" id="tMin">–</div><div class="delta" id="dMin"></div></div>
+    <div class="tile"><div class="label">Moyenne top 10</div><div class="value" id="tAvg">–</div><div class="delta" id="dAvg"></div></div>
+    <div class="tile"><div class="label">Plus bas relevé</div><div class="value" id="tLow">–</div><div class="delta" id="dLow"></div></div>
+    <div class="tile"><div class="label">Plus haut relevé</div><div class="value" id="tHigh">–</div><div class="delta" id="dHigh"></div></div>
+  </div>
+
+  <div class="chart"><canvas id="chart"></canvas></div>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Date</th><th>Prix mini</th><th>Moyenne top 10</th><th>Offres</th><th>Quantité</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</main>
+
+<script>
+const fmt = n => n === null || isNaN(n) ? "–" : Math.round(n).toLocaleString("fr-FR");
+const fmtDate = d => d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+let data = [], chart;
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const head = lines.shift().split(",");
+  return lines.filter(Boolean).map(line => {
+    // les noms d'objets peuvent contenir des virgules entre guillemets
+    const cells = line.match(/("([^"]|"")*"|[^,]*)(,|$)/g).map(c => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"'));
+    const r = Object.fromEntries(head.map((h, i) => [h, cells[i]]));
+    return {
+      date: new Date(r.date_utc.replace(" ", "T") + ":00Z"),
+      serveur: r.serveur, vnum: r.vnum, objet: r.objet,
+      min: r.prix_min === "" ? null : +r.prix_min,
+      avg: r.prix_moyen_top === "" ? null : +r.prix_moyen_top,
+      offres: +r.nb_offres, qte: +r.quantite_visible,
+    };
+  });
+}
+
+function delta(el, now, ref) {
+  if (now === null || ref === null || ref === undefined) { el.textContent = ""; return; }
+  const pct = (now - ref) / ref * 100;
+  el.className = "delta " + (pct < 0 ? "down" : pct > 0 ? "up" : "");
+  el.textContent = (pct > 0 ? "+" : "") + pct.toFixed(1) + " % vs relevé précédent";
+}
+
+function render() {
+  const vnum = document.getElementById("item").value;
+  const rows = data.filter(r => r.vnum === vnum);
+  const valid = rows.filter(r => r.min !== null);
+  const last = valid.at(-1), prev = valid.at(-2);
+
+  document.getElementById("tMin").textContent = fmt(last?.min);
+  document.getElementById("tAvg").textContent = fmt(last?.avg);
+  delta(document.getElementById("dMin"), last?.min ?? null, prev?.min);
+  delta(document.getElementById("dAvg"), last?.avg ?? null, prev?.avg);
+  const low = valid.reduce((a, r) => !a || r.min < a.min ? r : a, null);
+  const high = valid.reduce((a, r) => !a || r.min > a.min ? r : a, null);
+  document.getElementById("tLow").textContent = fmt(low?.min);
+  document.getElementById("dLow").textContent = low ? fmtDate(low.date) : "";
+  document.getElementById("tHigh").textContent = fmt(high?.min);
+  document.getElementById("dHigh").textContent = high ? fmtDate(high.date) : "";
+
+  document.getElementById("rows").innerHTML = rows.slice().reverse().slice(0, 50).map(r =>
+    `<tr><td>${fmtDate(r.date)}</td><td>${fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td><td>${fmt(r.qte)}</td></tr>`
+  ).join("") || `<tr><td colspan="5" class="empty">Pas encore de relevé pour cet objet.</td></tr>`;
+
+  const labels = rows.map(r => fmtDate(r.date));
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: { labels, datasets: [
+      { label: "Prix mini", data: rows.map(r => r.min), borderColor: "#e2b84a", backgroundColor: "#e2b84a", tension: .2, pointRadius: 2, spanGaps: true },
+      { label: "Moyenne top 10", data: rows.map(r => r.avg), borderColor: "#6fa8dc", backgroundColor: "#6fa8dc", tension: .2, pointRadius: 2, spanGaps: true },
+    ]},
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend: { labels: { color: "#e8e6e1" } },
+                 tooltip: { callbacks: { label: c => `${c.dataset.label} : ${fmt(c.parsed.y)} or` } } },
+      scales: {
+        x: { ticks: { color: "#9aa1a8", maxTicksLimit: 8 }, grid: { color: "#2a2f35" } },
+        y: { ticks: { color: "#9aa1a8", callback: v => fmt(v) }, grid: { color: "#2a2f35" } },
+      },
+    },
+  });
+}
+
+fetch("data/prices.csv?t=" + Date.now()).then(r => r.text()).then(text => {
+  data = parseCSV(text);
+  const sub = document.getElementById("sub");
+  if (!data.length) { sub.textContent = "Aucun relevé pour l'instant : le premier arrivera au prochain passage du robot."; return; }
+  sub.textContent = `Serveur ${data.at(-1).serveur} · dernier relevé le ${fmtDate(data.at(-1).date)} · ${data.length} relevés`;
+  const items = [...new Map(data.map(r => [r.vnum, r.objet])).entries()];
+  const select = document.getElementById("item");
+  select.innerHTML = items.map(([v, n]) => `<option value="${v}">${n}</option>`).join("");
+  select.onchange = render;
+  render();
+});
+</script>
+</body>
+</html>

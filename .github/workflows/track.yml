@@ -1,0 +1,42 @@
+name: Relevé des prix NosBazar
+
+on:
+  schedule:
+    # Toutes les 3 heures, à la 17e minute (heure UTC).
+    # GitHub peut décaler un peu les lancements planifiés.
+    - cron: "17 */3 * * *"
+  workflow_dispatch: {}   # bouton "Run workflow" pour lancer à la main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: releve-prix
+  cancel-in-progress: false
+
+jobs:
+  releve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Relever les prix
+        run: python tracker.py
+
+      - name: Enregistrer le CSV
+        run: |
+          git config user.name "nosbazar-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/prices.csv
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau."
+          else
+            git commit -m "Relevé du $(date -u '+%Y-%m-%d %H:%M') UTC"
+            git pull --rebase
+            git push
+          fi

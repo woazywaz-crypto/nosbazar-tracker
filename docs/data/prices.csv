@@ -1,3 +1,131 @@
-date_utc,serveur,vnum,objet,prix_min,prix_moyen_top,nb_offres,quantite_visible
+date_utc,serveur,vnum,objet,prix_min,prix_moyen_top,nb_offres,quantite_visible,categorie
 2026-11-11 21:33,EU-Undercity,2282,Plume d'ange,20900,21009,10,2680
 2026-11-11 21:59,EU-Undercity,2282,Plume d'ange,20997,20999,30,23618
+2026-11-11 22:32,EU-Undercity,2282,Plume d'ange,20999,21169,30,20677,Suivi principal
+2026-11-11 22:32,EU-Undercity,4600+4608+8458+8466,Ailes bzzz (permanent),2699998,2737499,4,4,Ailes
+2026-11-11 22:32,EU-Undercity,9453+9824,Ailes d'aigle dorées,1844000,1986899,23,282,Ailes
+2026-11-11 22:32,EU-Undercity,5560+9100,Ailes d'onyx,24950000,26649860,7,13,Ailes
+2026-11-11 22:32,EU-Undercity,4443+8396,Ailes de costume de fée (permanent),10999000,11239899,11,11,Ailes
+2026-11-11 22:32,EU-Undercity,9212+9213,Ailes de cristal,4695000,4725174,30,120,Ailes
+2026-11-11 22:32,EU-Undercity,5591+9111,Ailes de fée,369989,415765,18,719,Ailes
+2026-11-11 22:32,EU-Undercity,5800+9144,Ailes de l'éclair,154979,163695,30,560,Ailes
+2026-11-11 22:32,EU-Undercity,13467,Ailes de sapin,215000000,246046444,13,14,Ailes
+2026-11-11 22:32,EU-Undercity,13524+13573+13574+13575+13576+13577+13578+13579+13580,Ailes de saturnie (toutes couleurs),1499999,2280332,26,62,Ailes
+2026-11-11 22:32,EU-Undercity,5702+9137,Ailes du vent,129250,140874,27,739,Ailes
+2026-11-11 22:32,EU-Undercity,9441+9546,Ailes lunaires,14888949,15028689,30,91,Ailes
+2026-11-11 22:32,EU-Undercity,13239+13240+13241+13242+13243+13244+13245+13246+13247,Ailes mécas enflammées (toutes couleurs),1319999,1482066,29,214,Ailes
+2026-11-11 22:32,EU-Undercity,13821,Ailes osseuses de dragon,380000000,426399999,13,14,Ailes
+2026-11-11 22:32,EU-Undercity,13664,Ailes pyrotechniques,373000000,537485610,8,11,Ailes
+2026-11-11 22:32,EU-Undercity,13770+13774+13775+13776+13777+13778+13779+13780+13783,Ailes runiques (toutes),675000000,690500000,30,35,Ailes
+2026-11-11 22:32,EU-Undercity,9999,Ailes steampunk,134497995,137139298,17,28,Ailes
+2026-11-11 22:32,EU-Undercity,9176+9177,Ailes tranchantes,159998,177488,26,4562,Ailes
+2026-11-11 22:32,EU-Undercity,9777,Boîte à ailes rétro,9100000,9418565,21,150,Ailes
+2026-11-11 22:32,EU-Undercity,9242+9243,Florailes,11700000,12661270,7,10,Ailes
+2026-11-11 22:32,EU-Undercity,4547+8420,"Akhénaton, le pharaon maudit",,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8534+8537,Archer en pain d'épice Pur,75000000,87066666,11,11,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8571+8582,Archère elfe sylvestre Forga,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8918,Brita la mage citrouille,829399555,1037279953,10,10,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8532+8533,Combattant en pain d'épice Par,145000000,145000000,1,1,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8895,"Céline, seigneure des chevaliers fleuris",,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8796,Feraspa la guêpe d'assaut,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8710,Guerrier dragon Chamouraï,21888666,22618766,30,30,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8917,Koukour l'archer citrouille,1700000000,1700000000,1,1,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8878,Lumi,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8535+8538,Mage en pain d'épice Pir,90000000,94333333,3,3,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8718,Marie la vampire,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8877,Nézarun bienveillant,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,4825+8247,Princesse Vénus,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8515+8516,Prototype d'Halitus,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8916,Pépo le guerrier citrouille,1200000000,1379249950,4,4,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,4808+8231,SP partenaire de Maru,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,4446+8398,SP partenaire Perti Déplumay,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,4405+8367,SP partenaire Yuna l'Ensorceleuse,,,0,0,Partenaire / SP partenaire
+2026-11-11 22:32,EU-Undercity,8779,Boa bleu,499999999,499999999,1,1,Familier
+2026-11-11 22:32,EU-Undercity,8780,Boa vert,4299999,4585899,30,30,Familier
+2026-11-11 22:32,EU-Undercity,8511+8512,Bébé panda,53555000,53755333,30,30,Familier
+2026-11-11 22:32,EU-Undercity,5048,Coffre du hasard du Ratufu footballeur,,,0,0,Familier
+2026-11-11 22:32,EU-Undercity,8677+8678,Cupcake arc-en-ciel du 16e anniversaire,21298999,25649899,11,11,Familier
+2026-11-11 22:32,EU-Undercity,4611+8469,Dino Vorex,7499000,8535899,30,30,Familier
+2026-11-11 22:32,EU-Undercity,8539+8540,Lapin noir,21996999,22539099,30,30,Familier
+2026-11-11 22:32,EU-Undercity,4464+8401,Loutre,10498000,10498598,30,30,Familier
+2026-11-11 22:32,EU-Undercity,8778,Perle de Chacha Noël,250000000,250000000,1,1,Familier
+2026-11-11 22:32,EU-Undercity,285,Perle de familier,4180000,4181900,30,30,Familier
+2026-11-11 22:32,EU-Undercity,4701+8220,Ratufu ninja,320000,359800,30,30,Familier
+2026-11-11 22:32,EU-Undercity,4101+4103+4104+4105+4189+4190+4191+4192+5172,Ratufu pirate (tous éléments),15000000,16740000,30,30,Familier
+2026-11-11 22:32,EU-Undercity,2478,Ratufu épouvantail,6300,6477,21,9686,Familier
+2026-11-11 22:32,EU-Undercity,13417,Coffre de moto à vapeur,8666000,9785188,12,16,Monture
+2026-11-11 22:32,EU-Undercity,13752+13753,Tchi Tu (monture),37990000,75570000,7,9,Monture
+2026-11-11 22:32,EU-Undercity,13468+13469,Tornade (monture),10700070,12219199,7,12,Monture
+2026-11-11 22:32,EU-Undercity,8907+8908+8909,Minifamilier Courrier céleste,27199999,29479999,17,17,Minifamilier
+2026-11-11 22:32,EU-Undercity,8586+8588+8590+8592+8594+8596,Minifamilier Dragon noir,6999999,7000000,3,3,Minifamilier
+2026-11-11 22:32,EU-Undercity,8693+8694+8695+8781,Minifamilier Dragon porte-bonheur bleu,7444444,7888825,18,18,Minifamilier
+2026-11-11 22:32,EU-Undercity,8800+8801+8802,Minifamilier Extraterrestre mignon,13333333,13333333,30,30,Minifamilier
+2026-11-11 22:32,EU-Undercity,8585+8587+8589+8591+8593+8595,Minifamilier Griffon,8000000,8000000,2,2,Minifamilier
+2026-11-11 22:32,EU-Undercity,8788+8789+8790,Minifamilier Mielanie,17399999,17449500,30,30,Minifamilier
+2026-11-11 22:32,EU-Undercity,8719+8720+8721,Minifamilier Petit esprit arc-en-ciel,7333222,7333222,30,30,Minifamilier
+2026-11-11 22:32,EU-Undercity,8616+8617+8618+8622+8623+8624,Minifamilier Phénix bleu,7000000,7500000,4,4,Minifamilier
+2026-11-11 22:32,EU-Undercity,8879+8880+8881,Minifamilier Poney ardent,17799198,17799596,30,30,Minifamilier
+2026-11-11 22:32,EU-Undercity,8764+8765+8766,Minifamilier Poney rose,9800000,9879999,30,30,Minifamilier
+2026-11-11 22:32,EU-Undercity,9263+9285,Ensemble bzzz,,,0,0,Costume
+2026-11-11 22:32,EU-Undercity,9881,Ensemble de dino,3955554,4210956,9,109,Costume
+2026-11-11 22:32,EU-Undercity,13686,Ensemble de gardien des âmes,723333333,827583308,4,5,Costume
+2026-11-11 22:32,EU-Undercity,13763,Ensemble de l'apôtre dimensionnel (permanent),143999999,179157777,11,14,Costume
+2026-11-11 22:32,EU-Undercity,9946,Ensemble de serviteur divin sinistre,17878888,23678444,10,46,Costume
+2026-11-11 22:32,EU-Undercity,9817,Ensemble de squelette,18800000,19449997,4,7,Costume
+2026-11-11 22:32,EU-Undercity,13442,Ensemble du minibouh,68500000,81522222,5,35,Costume
+2026-11-11 22:32,EU-Undercity,13231,Ensemble du roi de Pâques,33000000,44099999,14,60,Costume
+2026-11-11 22:32,EU-Undercity,5874+9112,Fusion de costumes,99998,116950,13,21,Costume
+2026-11-11 22:32,EU-Undercity,9292+9559,Lot de pestologue,1289999,1738290,17,183,Costume
+2026-11-11 22:32,EU-Undercity,9577,Lot de tenue de voltigénieur,3333333,4140916,8,96,Costume
+2026-11-11 22:32,EU-Undercity,13482,Lot de tunique du pharaon,30000000,39649555,10,76,Costume
+2026-11-11 22:32,EU-Undercity,4602+4610+8460+8468,Lunettes de soleil bzzz (permanent),58500000,61750000,2,2,Costume
+2026-11-11 22:32,EU-Undercity,8867+8869+8871+8873,Apparences d'arme gardien du zodiaque (permanentes),,,0,0,Apparence d'arme
+2026-11-11 22:32,EU-Undercity,13403,Boîte d'apparence d'arme : fruits d'été,69899999,87646666,10,55,Apparence d'arme
+2026-11-11 22:32,EU-Undercity,9859,Coffre d'apparence d'arme chocolatée,13799997,32533332,3,4,Apparence d'arme
+2026-11-11 22:32,EU-Undercity,13220,Coffre d'apparence d'arme florale,13440000,13577999,5,42,Apparence d'arme
+2026-11-11 22:32,EU-Undercity,13815,Coffre d'apparences d'arme du désert,949999998,1049999999,16,16,Apparence d'arme
+2026-11-11 22:32,EU-Undercity,9347,Divinité (titre),9490000,9648659,30,80,Titre
+2026-11-11 22:32,EU-Undercity,9438,Faburlesque (titre),34500000,43260000,5,5,Titre
+2026-11-11 22:32,EU-Undercity,13043,Maitre de raid (titre),570000000,703666667,6,8,Titre
+2026-11-11 22:32,EU-Undercity,13017,Ombre nocturne (titre),7500000,8099398,12,111,Titre
+2026-11-11 22:32,EU-Undercity,13055,Transcendé (titre),948500000,990187766,23,23,Titre
+2026-11-11 22:32,EU-Undercity,536+8065,Amulette de puissance,,,0,0,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,4262+8543,Amulette héroïque de la bénédiction (aléatoire),7298000,7298500,30,30,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,5735,Amulette héroïque scellée de la bénédiction,7199999,7794098,21,2224,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,9461+9574+9582,Parchemin d'amélioration des runes premium,2699999,2746899,30,1292,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,5823+9460,Parchemin de chance runique,1637999,1671150,30,1678,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,5815+9466,Parchemin de préservation de tatouage,5299999,5383965,30,3357,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,1218+9458,Parchemin protecteur d'équipement,2548000,2572844,19,2937,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,5369+9459,Parchemin protecteur d'équipement doré,2899000,2902500,30,7303,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,9287+9465,Parchemin protecteur de carte draconique,509900,533989,29,22308,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,1363+9463,Parchemin protecteur inférieur pour carte de SP,201999,316999,6,2379,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,9497+9924,Parchemin protecteur inférieur pour carte de SP (premium),154990,166963,19,8282,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,9499+9926,Parchemin protecteur pour carte draconique (premium),5499998,5933332,3,482,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,1364+9464,Parchemin protecteur supérieur pour carte de SP,533620,536477,30,15549,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,9498+9925,Parchemin protecteur supérieur pour carte de SP (premium),2043999,2071186,14,3387,Amulette / parchemin
+2026-11-11 22:32,EU-Undercity,1271,Bon de fabrication,398,431,30,15791,Consommable
+2026-11-11 22:32,EU-Undercity,5738,Boosteur d'EXP de famille (1 jour),580000,660499,30,1171,Consommable
+2026-11-11 22:32,EU-Undercity,1286+1452+9041,Bénédiction d'Ancelloan,154888,160732,30,9240,Consommable
+2026-11-11 22:32,EU-Undercity,1285+1499+9043,Bénédiction de l'ange gardien,5796,5856,30,24375,Consommable
+2026-11-11 22:32,EU-Undercity,5725+9139,Clé principale de coffre au trésor,428999,437776,27,7736,Consommable
+2026-11-11 22:32,EU-Undercity,2158+10024,Croquettes de qualité,16600,17045,30,6605,Consommable
+2026-11-11 22:32,EU-Undercity,2477,Dresseur animalier samouraï,122449,127984,30,15891,Consommable
+2026-11-11 22:32,EU-Undercity,1122+9017,Eau de source de Cylloan,1880,1932,30,21002,Consommable
+2026-11-11 22:32,EU-Undercity,9581,Gomme de cellon,12199000,13933134,9,67,Consommable
+2026-11-11 22:32,EU-Undercity,2419,Grimoire d'invocation de NosMate,2199,3146,30,1695,Consommable
+2026-11-11 22:32,EU-Undercity,2332,Grosse pépite d'or,,,0,0,Consommable
+2026-11-11 22:32,EU-Undercity,2173+10028,Haut-parleur,1678,1688,30,27677,Consommable
+2026-11-11 22:32,EU-Undercity,1904,Jeu de tarot,79999,82531,30,3874,Consommable
+2026-11-11 22:32,EU-Undercity,5841+9117,Lot de runes de mère Nature,1004999,1031299,30,1054,Consommable
+2026-11-11 22:32,EU-Undercity,1428,Parfum,91999,92047,30,12834,Consommable
+2026-11-11 22:32,EU-Undercity,2630,Pierre précieuse draconique,9900,10078,30,13383,Consommable
+2026-11-11 22:32,EU-Undercity,1246+9020,Potion d'attaque,5249,5322,30,21645,Consommable
+2026-11-11 22:32,EU-Undercity,5370+9116,Potion d'expérience pour fée,4110,4277,30,15657,Consommable
+2026-11-11 22:32,EU-Undercity,1248+9022,Potion d'énergie,1179,1211,30,22277,Consommable
+2026-11-11 22:32,EU-Undercity,1247+9021,Potion de défense,9198,9267,25,16856,Consommable
+2026-11-11 22:32,EU-Undercity,1011+1076+1498+9042,Potion de récupération géante,817,820,30,25852,Consommable
+2026-11-11 22:32,EU-Undercity,1366+1427+9040,Potion de réinitialisation des points,345000,350694,14,6064,Consommable
+2026-11-11 22:32,EU-Undercity,1296+5194+9074,Renforcement féérique,177998,178753,30,16360,Consommable
+2026-11-11 22:32,EU-Undercity,1945+1946+9057,Récipient scellé,60000,61382,30,22625,Consommable
+2026-11-11 22:32,EU-Undercity,5932+9110,Ticket de compétence pour partenaire (multiple),87700,88883,18,5284,Consommable
+2026-11-11 22:32,EU-Undercity,5931+9109,Ticket de compétence pour partenaire (unique),6989000,7534242,9,491,Consommable

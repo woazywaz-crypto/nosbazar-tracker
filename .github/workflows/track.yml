@@ -3,9 +3,15 @@ name: Relevé des prix NosBazar
 on:
   schedule:
     # Toutes les 3 heures, à la 17e minute (heure UTC).
+    # Les objets "freq_h": 24 ne sont relevés qu'au passage de 06:17 UTC.
     # GitHub peut décaler un peu les lancements planifiés.
     - cron: "17 */3 * * *"
-  workflow_dispatch: {}   # bouton "Run workflow" pour lancer à la main
+  workflow_dispatch:
+    inputs:
+      tout_relever:
+        description: "Relever tous les objets maintenant (sinon : seulement ceux prévus à cette heure)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -17,7 +23,7 @@ concurrency:
 jobs:
   releve:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +32,8 @@ jobs:
           python-version: "3.12"
 
       - name: Relever les prix
+        env:
+          FORCE_ALL: ${{ inputs.tout_relever && '1' || '' }}
         run: python tracker.py
 
       - name: Enregistrer le CSV

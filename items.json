@@ -1,9 +1,8 @@
 {
   "server": 11,
   "server_name": "EU-Undercity",
-  "daily_hour_utc": 6,
+  "daily_hour_utc": 14,
   "items": [
-    {"name": "Plume d'ange", "categorie": "Suivi principal", "vnums": [2282], "freq_h": 3},
     {"name": "Ailes bzzz (permanent)", "categorie": "Ailes", "vnums": [4600, 4608, 8458, 8466], "freq_h": 24},
     {"name": "Ailes d'aigle dorées", "categorie": "Ailes", "vnums": [9453, 9824], "freq_h": 24},
     {"name": "Ailes d'onyx", "categorie": "Ailes", "vnums": [5560, 9100], "freq_h": 24},

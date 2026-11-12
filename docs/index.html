@@ -76,7 +76,7 @@
   <section class="update">
     <div class="row">
       <button class="primary" id="btnFavs">Mettre à jour mes favoris</button>
-      <button id="btnAll">Tout mettre à jour</button>
+      <button id="btnAll">Tout mettre à jour (≈ 15 min)</button>
     </div>
     <div class="status" id="status"></div>
     <details id="setup">
@@ -102,6 +102,7 @@
     <label for="item" class="sub" style="margin:0">Objet :</label>
     <select id="item"></select>
     <button class="star" id="itemStar" title="Ajouter aux favoris" aria-label="Ajouter aux favoris">☆</button>
+    <button class="primary" id="btnOne">Mettre à jour cet objet</button>
   </div>
 
   <div class="tiles">
@@ -187,7 +188,7 @@ function buildSelect() {
   const select = $("item"); const current = select.value;
   const groups = {};
   for (const [v, x] of itemInfo) (groups[x.c] = groups[x.c] || []).push([v, x.n]);
-  order = Object.keys(groups).sort((a, b) => (a === "Suivi principal" ? -1 : b === "Suivi principal" ? 1 : a.localeCompare(b, "fr")));
+  order = Object.keys(groups).sort((a, b) => (a === "Suivi principal" ? 1 : b === "Suivi principal" ? -1 : a.localeCompare(b, "fr")));
   const opt = ([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`;
   const byName = (a, b) => a[1].localeCompare(b[1], "fr");
   const favList = [...itemInfo].filter(([v]) => isFav(v)).map(([v, x]) => [v, x.n]).sort(byName);
@@ -296,6 +297,7 @@ function setStatus(msg, kind) { const s = $("status"); s.textContent = msg; s.cl
 function refreshButtons() {
   const hasToken = !!getToken();
   $("btnFavs").disabled = running || favs.size === 0;
+  $("btnOne").disabled = running || !$("item").value;
   $("btnAll").disabled = running;
   $("btnFavs").textContent = favs.size ? `Mettre à jour mes favoris (${favs.size})` : "Mettre à jour mes favoris";
   $("tokenState").textContent = hasToken ? "✓ Clé enregistrée dans ce navigateur." : "Aucune clé enregistrée : les boutons ouvriront la page GitHub pour lancer le relevé à la main.";
@@ -328,17 +330,18 @@ async function gh(path, opts = {}) {
 }
 
 async function launch(mode) {
-  const objets = mode === "favs" ? [...favs].join(",") : "";
+  const objets = mode === "favs" ? [...favs].join(",") : mode === "one" ? $("item").value : "";
+  const nb = mode === "favs" ? favs.size : 1;
   if (!getToken()) {
     window.open(ACTIONS_PAGE, "_blank", "noopener");
-    setStatus(mode === "favs"
+    setStatus(mode !== "all"
       ? "Page GitHub ouverte : clique sur « Run workflow » et colle ces numéros dans le champ « objets » : " + objets
       : "Page GitHub ouverte : clique sur « Run workflow », coche « Relever tous les objets », puis valide.");
     $("setup").open = true;
     return;
   }
   const lastRun = store.get("nb_last_run", 0);
-  if (Date.now() - lastRun < 2 * 60 * 1000) { setStatus("Un relevé vient d'être lancé, attends deux minutes avant d'en relancer un.", "err"); return; }
+  if (Date.now() - lastRun < 60 * 1000) { setStatus("Un relevé vient d'être lancé, attends une minute avant d'en relancer un.", "err"); return; }
 
   running = true; refreshButtons();
   const started = new Date(Date.now() - 5000);
@@ -346,10 +349,11 @@ async function launch(mode) {
     setStatus("Lancement du relevé…");
     await gh("/actions/workflows/track.yml/dispatches", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ref: "main", inputs: mode === "favs" ? { tout_relever: "false", objets } : { tout_relever: "true", objets: "" } }),
+      body: JSON.stringify({ ref: "main", inputs: mode === "all" ? { tout_relever: "true", objets: "" } : { tout_relever: "false", objets } }),
     });
     store.set("nb_last_run", Date.now());
-    const eta = mode === "favs" ? `environ ${Math.max(1, Math.ceil(favs.size * 6 / 60) + 1)} min` : "une quinzaine de minutes";
+    const eta = mode === "all" ? "une quinzaine de minutes" : `environ ${Math.ceil(nb * 6 / 60) + 1} min`;
+    const what = mode === "one" ? `« ${$("item").selectedOptions[0]?.text || "objet"} »` : mode === "favs" ? `${nb} favori(s)` : "tous les objets";
     let run = null;
     for (let i = 0; i < 180; i++) {             // jusqu'à ~45 min
       await new Promise(r => setTimeout(r, 15000));
@@ -357,7 +361,7 @@ async function launch(mode) {
       const j = await res.json();
       run = (j.workflow_runs || []).find(r => new Date(r.created_at) >= started) || run;
       if (!run) { setStatus("Relevé en attente de démarrage chez GitHub…"); continue; }
-      if (run.status !== "completed") { setStatus(`Relevé en cours (${eta})… tu peux laisser cette page ouverte.`); continue; }
+      if (run.status !== "completed") { setStatus(`Relevé en cours pour ${what} (${eta})… tu peux laisser cette page ouverte.`); continue; }
       break;
     }
     if (!run || run.status !== "completed") throw new Error("le relevé prend plus de temps que prévu, recharge la page plus tard");
@@ -374,6 +378,7 @@ async function launch(mode) {
 }
 $("btnFavs").onclick = () => launch("favs");
 $("btnAll").onclick = () => launch("all");
+$("btnOne").onclick = () => launch("one");
 refreshButtons();
 </script>
 </body>

@@ -106,7 +106,13 @@ def main() -> int:
     now = now_dt.strftime("%Y-%m-%d %H:%M")
     force = os.environ.get("FORCE_ALL", "").strip() in ("1", "true", "yes")
 
-    due = [it for it in config["items"] if is_due(it, config, now_dt, force)]
+    # OBJETS="4600+4608,13664" : ne relever que ces objets (bouton "favoris" de la page)
+    only = {k.strip() for k in os.environ.get("OBJETS", "").split(",") if k.strip()}
+    if only:
+        due = [it for it in config["items"]
+               if "+".join(str(v) for v in item_vnums(it)) in only][:60]
+    else:
+        due = [it for it in config["items"] if is_due(it, config, now_dt, force)]
     print(f"{len(due)} objet(s) à relever sur {len(config['items'])}")
 
     CSV_FILE.parent.mkdir(parents=True, exist_ok=True)

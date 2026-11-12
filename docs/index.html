@@ -66,6 +66,14 @@
   #overview a { color: var(--gold); cursor: pointer; text-decoration: none; white-space: normal; }
   #overview td:nth-child(2) { color: var(--muted); text-align: left; }
   .none { color: var(--muted); }
+  .manage { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+  .manage .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .manage input[type=text] { background: var(--bg); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px; font-size: 1rem; flex: 1 1 240px; min-width: 0; }
+  .manage select { min-width: 0; flex: 0 1 200px; }
+  .manage .hint { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+  .rm { background: none; border: none; color: var(--muted); padding: 0 6px; font-size: 1rem; }
+  .rm:hover { color: var(--up); }
 </style>
 </head>
 <body>
@@ -119,6 +127,17 @@
     <tbody id="rows"></tbody>
   </table></div>
 
+  <h2>Gérer mes objets</h2>
+  <div class="manage">
+    <div class="row">
+      <input type="text" id="addName" list="addList" placeholder="Nom de l'objet (ex. Ailes pyrotechniques)" autocomplete="off">
+      <datalist id="addList"></datalist>
+      <select id="addCat"></select>
+      <button class="primary" id="btnAdd">Ajouter au suivi</button>
+    </div>
+    <p class="hint" id="addHint">Tape le début du nom et choisis dans la liste proposée. GitHub s'ouvre : clique sur le bouton vert <b>« Create »</b> (ou « Submit new issue »), c'est tout. L'objet est ajouté et son prix relevé en une à deux minutes. Pour retirer un objet, clique sur ✕ dans le tableau ci-dessous.</p>
+  </div>
+
   <h2>Vue d'ensemble</h2>
   <p class="sub">Dernier relevé de chaque objet. ★ pour mettre en favori, clic sur un nom pour voir son graphique. « Pas en vente » : aucune offre au bazar au moment du relevé.</p>
   <div class="filters">
@@ -157,7 +176,9 @@ function toggleFav(v) {
   buildSelect(); renderStar(); renderOverview(); refreshButtons();
 }
 
-let data = [], chart, order = [], itemInfo = new Map();
+let data = [], chart, order = [], itemInfo = new Map(), tracked = null; // tracked: Map clé -> {name, categorie}
+const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/`;
+const isTracked = v => !tracked || tracked.has(v);
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -187,15 +208,21 @@ function delta(el, now, ref) {
 function buildSelect() {
   const select = $("item"); const current = select.value;
   const groups = {};
-  for (const [v, x] of itemInfo) (groups[x.c] = groups[x.c] || []).push([v, x.n]);
+  for (const [v, x] of itemInfo) if (isTracked(v)) (groups[x.c] = groups[x.c] || []).push([v, x.n]);
   order = Object.keys(groups).sort((a, b) => (a === "Suivi principal" ? 1 : b === "Suivi principal" ? -1 : a.localeCompare(b, "fr")));
   const opt = ([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`;
   const byName = (a, b) => a[1].localeCompare(b[1], "fr");
-  const favList = [...itemInfo].filter(([v]) => isFav(v)).map(([v, x]) => [v, x.n]).sort(byName);
+  const favList = [...itemInfo].filter(([v]) => isFav(v) && isTracked(v)).map(([v, x]) => [v, x.n]).sort(byName);
   select.innerHTML =
     (favList.length ? `<optgroup label="★ Favoris">${favList.map(opt).join("")}</optgroup>` : "") +
     order.map(c => `<optgroup label="${esc(c)}">${groups[c].sort(byName).map(opt).join("")}</optgroup>`).join("");
-  if (current && itemInfo.has(current)) select.value = current;
+  if (current && itemInfo.has(current) && isTracked(current)) select.value = current;
+  // catégories proposées pour l'ajout
+  const cats = new Set(["Ailes", "Familier", "Partenaire / SP partenaire", "Monture", "Minifamilier", "Costume", "Apparence d'arme", "Titre", "Amulette / parchemin", "Consommable", "Autres"]);
+  if (tracked) for (const it of tracked.values()) if (it.categorie) cats.add(it.categorie);
+  const keep = $("addCat").value;
+  $("addCat").innerHTML = [...cats].map(c => `<option>${esc(c)}</option>`).join("");
+  if (keep) $("addCat").value = keep;
 }
 
 function renderStar() {
@@ -251,21 +278,27 @@ function renderOverview() {
   const only = $("onlyFavs").checked;
   const last = new Map();
   for (const r of data) last.set(r.vnum, r);
+  if (tracked) for (const [k, it] of tracked) if (!last.has(k))
+    last.set(k, { vnum: k, objet: it.name, cat: it.categorie || "Autres", min: null, avg: null, offres: 0, date: null, pending: true });
   const rows = [...last.values()]
+    .filter(r => isTracked(r.vnum))
     .filter(r => !only || isFav(r.vnum))
     .filter(r => !q || r.objet.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q))
     .sort((a, b) => (isFav(b.vnum) - isFav(a.vnum)) || order.indexOf(a.cat) - order.indexOf(b.cat) || a.objet.localeCompare(b.objet, "fr"));
   $("overview").innerHTML = rows.map(r => {
     const on = isFav(r.vnum);
-    return `<tr><td><button class="star${on ? " on" : ""}" data-fav="${esc(r.vnum)}" aria-label="${on ? "Retirer des favoris" : "Ajouter aux favoris"}" title="${on ? "Retirer des favoris" : "Ajouter aux favoris"}">${on ? "★" : "☆"}</button>` +
+    return `<tr><td><button class="rm" data-rm="${esc(r.vnum)}" data-name="${esc(r.objet)}" title="Retirer du suivi" aria-label="Retirer ${esc(r.objet)} du suivi">✕</button><button class="star${on ? " on" : ""}" data-fav="${esc(r.vnum)}" aria-label="${on ? "Retirer des favoris" : "Ajouter aux favoris"}" title="${on ? "Retirer des favoris" : "Ajouter aux favoris"}">${on ? "★" : "☆"}</button>` +
       `<a data-v="${esc(r.vnum)}">${esc(r.objet)}</a></td><td>${esc(r.cat)}</td>` +
-      (r.min === null ? `<td colspan="3" class="none">Pas en vente</td>` :
+      (r.pending ? `<td colspan="3" class="none">En attente du premier relevé</td>` :
+       r.min === null ? `<td colspan="3" class="none">Pas en vente</td>` :
         `<td>${fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td>`) +
-      `<td>${fmtDate(r.date)}</td></tr>`;
+      `<td>${r.date ? fmtDate(r.date) : "–"}</td></tr>`;
   }).join("") || `<tr><td colspan="6" class="empty">${only ? "Aucun favori pour l'instant : clique sur ☆ à côté d'un objet." : "Aucun objet ne correspond."}</td></tr>`;
 }
 
 $("overview").addEventListener("click", e => {
+  const rm = e.target.closest("[data-rm]");
+  if (rm) { removeItem(rm.dataset.rm, rm.dataset.name); return; }
   const star = e.target.closest("[data-fav]");
   if (star) { toggleFav(star.dataset.fav); return; }
   const a = e.target.closest("a[data-v]");
@@ -285,8 +318,48 @@ function applyData(text) {
   buildSelect(); render(); renderOverview(); refreshButtons();
 }
 
-fetch("data/prices.csv?t=" + Date.now()).then(r => r.text()).then(applyData)
+function loadTracked() {
+  return fetch(RAW + "items.json?t=" + Date.now()).then(r => r.json())
+    .then(j => { tracked = new Map(j.items.map(it => [it.vnums.join("+"), it])); })
+    .catch(() => { tracked = null; });
+}
+Promise.all([loadTracked(), fetch("data/prices.csv?t=" + Date.now()).then(r => r.text())])
+  .then(([, text]) => applyData(text))
   .catch(() => { $("sub").textContent = "Impossible de charger les relevés pour le moment."; });
+
+// ---------- ajouter / retirer un objet ----------
+const ISSUE_URL = `https://github.com/${OWNER}/${REPO}/issues/new`;
+function openRequest(title, body) {
+  const url = ISSUE_URL + "?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+  window.open(url, "_blank", "noopener");
+}
+let suggestTimer;
+$("addName").addEventListener("input", () => {
+  clearTimeout(suggestTimer);
+  const q = $("addName").value.trim();
+  if (q.length < 3) return;
+  suggestTimer = setTimeout(async () => {
+    try {
+      const j = await fetch("https://nosbazar.com/api/items/name-search?lang=FR&limit=15&q=" + encodeURIComponent(q)).then(r => r.json());
+      const names = [...new Set((j.matches || []).map(m => m.name))];
+      $("addList").innerHTML = names.map(n => `<option value="${esc(n)}">`).join("");
+    } catch {}
+  }, 300);
+});
+$("btnAdd").onclick = () => {
+  const name = $("addName").value.trim();
+  if (!name) { $("addName").focus(); return; }
+  openRequest("Ajouter : " + name, "Catégorie : " + $("addCat").value +
+    "\n\n(Demande créée depuis la page de suivi. Clique sur « Create » pour valider.)");
+  $("addHint").innerHTML = `Demande d'ajout de <b>${esc(name)}</b> ouverte sur GitHub : clique sur le bouton vert <b>« Create »</b>. Recharge cette page dans une à deux minutes.`;
+  $("addName").value = "";
+};
+function removeItem(key, name) {
+  if (!confirm(`Retirer « ${name} » du suivi ?\n(Son historique de prix est conservé.)`)) return;
+  openRequest("Retirer : " + key, "Objet : " + name +
+    "\n\n(Demande créée depuis la page de suivi. Clique sur « Create » pour valider.)");
+  $("addHint").innerHTML = `Demande de retrait de <b>${esc(name)}</b> ouverte sur GitHub : clique sur le bouton vert <b>« Create »</b>. Recharge cette page dans une minute.`;
+}
 
 // ---------- bouton de mise à jour ----------
 const getToken = () => store.get("nb_token", "");

@@ -319,7 +319,11 @@ function applyData(text) {
 }
 
 function loadTracked() {
-  return fetch(RAW + "items.json?t=" + Date.now()).then(r => r.json())
+  // l'API GitHub donne la version à jour ; raw.githubusercontent.com garde un cache de quelques minutes
+  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/items.json?ref=main`,
+               { headers: { Accept: "application/vnd.github.raw" } })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .catch(() => fetch(RAW + "items.json?t=" + Date.now()).then(r => r.json()))
     .then(j => { tracked = new Map(j.items.map(it => [it.vnums.join("+"), it])); })
     .catch(() => { tracked = null; });
 }

@@ -11,6 +11,10 @@ on:
         description: "Relever tous les objets maintenant (sinon : seulement ceux prévus à cette heure)"
         type: boolean
         default: false
+      objets:
+        description: "Ne relever que ces objets (numéros séparés par des virgules, rempli par le bouton Favoris de la page)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -33,6 +37,7 @@ jobs:
       - name: Relever les prix
         env:
           FORCE_ALL: ${{ inputs.tout_relever && '1' || '' }}
+          OBJETS: ${{ inputs.objets }}
         run: python tracker.py
 
       - name: Enregistrer le CSV

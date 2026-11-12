@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tout_relever:
-        description: "Relever tous les objets maintenant (sinon : seulement ceux prévus à cette heure)"
+        description: "Relever tous les objets (c'est aussi le cas si le champ ci-dessous est vide)"
         type: boolean
         default: false
       objets:
@@ -36,7 +36,8 @@ jobs:
 
       - name: Relever les prix
         env:
-          FORCE_ALL: ${{ inputs.tout_relever && '1' || '' }}
+          # Lancement manuel sans numéros d'objets : on relève tout
+          FORCE_ALL: ${{ (inputs.tout_relever || (github.event_name == 'workflow_dispatch' && inputs.objets == '')) && '1' || '' }}
           OBJETS: ${{ inputs.objets }}
         run: python tracker.py
 

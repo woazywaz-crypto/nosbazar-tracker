@@ -15,9 +15,35 @@
          font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
   h1 { font-size: 1.4rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 20px; font-size: .9rem; }
-  select { background: var(--panel); color: var(--text); border: 1px solid var(--line);
-           border-radius: 6px; padding: 8px 10px; font-size: 1rem; min-width: 220px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: .9rem; }
+  select, input[type=search], input[type=password] {
+    background: var(--panel); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px; font-size: 1rem; }
+  select { min-width: 220px; max-width: 100%; }
+  button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--line);
+           background: var(--panel); color: var(--text); padding: 8px 12px; }
+  button:hover:not(:disabled) { border-color: var(--gold); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.primary { background: var(--gold); border-color: var(--gold); color: #1a1a1a; font-weight: 600; }
+  .star { background: none; border: none; padding: 0 4px; font-size: 1.2rem; line-height: 1; color: var(--muted); }
+  .star.on { color: var(--gold); }
+  .pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .pick .star { font-size: 1.6rem; }
+
+  .update { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+            padding: 12px 14px; margin: 0 0 20px; }
+  .update .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .update .status { color: var(--muted); font-size: .9rem; margin-top: 8px; min-height: 1.4em; }
+  .update .status.ok { color: var(--down); } .update .status.err { color: var(--up); }
+  details { margin-top: 10px; font-size: .9rem; color: var(--muted); }
+  details summary { cursor: pointer; color: var(--text); }
+  details ol { padding-left: 20px; margin: 8px 0; }
+  details code { background: var(--bg); padding: 1px 5px; border-radius: 4px; color: var(--text); }
+  details a { color: var(--gold); }
+  .tokenrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .tokenrow input { flex: 1 1 220px; min-width: 0; }
+
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
            gap: 12px; margin: 20px 0; }
   .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
@@ -27,16 +53,17 @@
   .down { color: var(--down); } .up { color: var(--up); }
   .chart { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
            padding: 12px; height: 360px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-variant-numeric: tabular-nums; }
   th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); }
   th:first-child, td:first-child { text-align: left; }
   th { color: var(--muted); font-weight: 500; font-size: .85rem; }
   .empty { color: var(--muted); padding: 40px 0; text-align: center; }
   .scroll { overflow-x: auto; }
-  h2 { font-size: 1.15rem; margin: 36px 0 4px; }
-  #filter { background: var(--panel); color: var(--text); border: 1px solid var(--line);
-            border-radius: 6px; padding: 8px 10px; font-size: 1rem; width: 100%; max-width: 360px; margin: 8px 0; }
-  #overview a { color: var(--gold); cursor: pointer; text-decoration: none; }
+  .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 8px 0; }
+  .filters input[type=search] { flex: 1 1 220px; max-width: 360px; }
+  .filters label { color: var(--muted); font-size: .9rem; display: flex; gap: 6px; align-items: center; }
+  #overview td:first-child { white-space: nowrap; }
+  #overview a { color: var(--gold); cursor: pointer; text-decoration: none; white-space: normal; }
   #overview td:nth-child(2) { color: var(--muted); text-align: left; }
   .none { color: var(--muted); }
 </style>
@@ -46,8 +73,36 @@
   <h1>Suivi des prix NosBazar</h1>
   <p class="sub" id="sub">Chargement…</p>
 
-  <label for="item" class="sub">Objet : </label>
-  <select id="item"></select>
+  <section class="update">
+    <div class="row">
+      <button class="primary" id="btnFavs">Mettre à jour mes favoris</button>
+      <button id="btnAll">Tout mettre à jour</button>
+    </div>
+    <div class="status" id="status"></div>
+    <details id="setup">
+      <summary>Configurer le bouton (une seule fois par appareil)</summary>
+      <p>Pour lancer un relevé depuis cette page, GitHub demande une clé d'accès. Elle reste uniquement dans ce navigateur et n'est envoyée qu'à GitHub.</p>
+      <ol>
+        <li>Ouvre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (connecté avec ton compte perso).</li>
+        <li>Nom : <code>bouton nosbazar</code>. Expiration : celle que tu veux (1 an par exemple).</li>
+        <li><b>Repository access</b> : <i>Only select repositories</i> → <code>nosbazar-tracker</code>.</li>
+        <li><b>Permissions → Repository permissions → Actions</b> : <i>Read and write</i>. Rien d'autre.</li>
+        <li>Clique sur <i>Generate token</i>, copie la clé et colle-la ci-dessous.</li>
+      </ol>
+      <div class="tokenrow">
+        <input type="password" id="token" placeholder="github_pat_…" autocomplete="off">
+        <button id="saveToken">Enregistrer</button>
+        <button id="forgetToken">Oublier la clé</button>
+      </div>
+      <p id="tokenState"></p>
+    </details>
+  </section>
+
+  <div class="pick">
+    <label for="item" class="sub" style="margin:0">Objet :</label>
+    <select id="item"></select>
+    <button class="star" id="itemStar" title="Ajouter aux favoris" aria-label="Ajouter aux favoris">☆</button>
+  </div>
 
   <div class="tiles">
     <div class="tile"><div class="label">Prix mini actuel</div><div class="value" id="tMin">–</div><div class="delta" id="dMin"></div></div>
@@ -64,8 +119,11 @@
   </table></div>
 
   <h2>Vue d'ensemble</h2>
-  <p class="sub">Dernier relevé de chaque objet. Clique sur un nom pour voir son graphique. « Pas en vente » : aucune offre au bazar au moment du relevé.</p>
-  <input id="filter" type="search" placeholder="Filtrer (nom ou catégorie)…">
+  <p class="sub">Dernier relevé de chaque objet. ★ pour mettre en favori, clic sur un nom pour voir son graphique. « Pas en vente » : aucune offre au bazar au moment du relevé.</p>
+  <div class="filters">
+    <input id="filter" type="search" placeholder="Filtrer (nom ou catégorie)…">
+    <label><input type="checkbox" id="onlyFavs"> Favoris uniquement</label>
+  </div>
   <div class="scroll"><table>
     <thead><tr><th>Objet</th><th>Catégorie</th><th>Prix mini</th><th>Moyenne top 10</th><th>Offres</th><th>Relevé</th></tr></thead>
     <tbody id="overview"></tbody>
@@ -73,9 +131,32 @@
 </main>
 
 <script>
-const fmt = n => n === null || isNaN(n) ? "–" : Math.round(n).toLocaleString("fr-FR");
+const fmt = n => n === null || n === undefined || isNaN(n) ? "–" : Math.round(n).toLocaleString("fr-FR");
 const fmtDate = d => d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-let data = [], chart;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const $ = id => document.getElementById(id);
+
+// Dépôt GitHub déduit de l'adresse de la page (pseudo.github.io/depot/)
+const OWNER = location.hostname.endsWith(".github.io") ? location.hostname.split(".")[0] : "woazywaz-crypto";
+const REPO = location.hostname.endsWith(".github.io") ? (location.pathname.split("/")[1] || "nosbazar-tracker") : "nosbazar-tracker";
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const ACTIONS_PAGE = `https://github.com/${OWNER}/${REPO}/actions/workflows/track.yml`;
+
+// ---------- stockage local (favoris, clé) ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+let favs = new Set(store.get("nb_favs", []));
+const isFav = v => favs.has(v);
+function toggleFav(v) {
+  favs.has(v) ? favs.delete(v) : favs.add(v);
+  store.set("nb_favs", [...favs]);
+  buildSelect(); renderStar(); renderOverview(); refreshButtons();
+}
+
+let data = [], chart, order = [], itemInfo = new Map();
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -96,38 +177,59 @@ function parseCSV(text) {
 }
 
 function delta(el, now, ref) {
-  if (now === null || ref === null || ref === undefined) { el.textContent = ""; return; }
+  if (now === null || ref === null || ref === undefined) { el.textContent = ""; el.className = "delta"; return; }
   const pct = (now - ref) / ref * 100;
   el.className = "delta " + (pct < 0 ? "down" : pct > 0 ? "up" : "");
   el.textContent = (pct > 0 ? "+" : "") + pct.toFixed(1) + " % vs relevé précédent";
 }
 
+function buildSelect() {
+  const select = $("item"); const current = select.value;
+  const groups = {};
+  for (const [v, x] of itemInfo) (groups[x.c] = groups[x.c] || []).push([v, x.n]);
+  order = Object.keys(groups).sort((a, b) => (a === "Suivi principal" ? -1 : b === "Suivi principal" ? 1 : a.localeCompare(b, "fr")));
+  const opt = ([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`;
+  const byName = (a, b) => a[1].localeCompare(b[1], "fr");
+  const favList = [...itemInfo].filter(([v]) => isFav(v)).map(([v, x]) => [v, x.n]).sort(byName);
+  select.innerHTML =
+    (favList.length ? `<optgroup label="★ Favoris">${favList.map(opt).join("")}</optgroup>` : "") +
+    order.map(c => `<optgroup label="${esc(c)}">${groups[c].sort(byName).map(opt).join("")}</optgroup>`).join("");
+  if (current && itemInfo.has(current)) select.value = current;
+}
+
+function renderStar() {
+  const v = $("item").value, on = isFav(v), b = $("itemStar");
+  b.textContent = on ? "★" : "☆"; b.classList.toggle("on", on);
+  b.title = on ? "Retirer des favoris" : "Ajouter aux favoris"; b.setAttribute("aria-label", b.title);
+}
+
 function render() {
-  const vnum = document.getElementById("item").value;
+  const vnum = $("item").value;
+  renderStar();
   const rows = data.filter(r => r.vnum === vnum);
   const valid = rows.filter(r => r.min !== null);
   const last = valid.at(-1), prev = valid.at(-2);
 
-  document.getElementById("tMin").textContent = fmt(last?.min);
-  document.getElementById("tAvg").textContent = fmt(last?.avg);
-  delta(document.getElementById("dMin"), last?.min ?? null, prev?.min);
-  delta(document.getElementById("dAvg"), last?.avg ?? null, prev?.avg);
+  $("tMin").textContent = fmt(last?.min);
+  $("tAvg").textContent = fmt(last?.avg);
+  delta($("dMin"), last?.min ?? null, prev?.min);
+  delta($("dAvg"), last?.avg ?? null, prev?.avg);
   const low = valid.reduce((a, r) => !a || r.min < a.min ? r : a, null);
   const high = valid.reduce((a, r) => !a || r.min > a.min ? r : a, null);
-  document.getElementById("tLow").textContent = fmt(low?.min);
-  document.getElementById("dLow").textContent = low ? fmtDate(low.date) : "";
-  document.getElementById("tHigh").textContent = fmt(high?.min);
-  document.getElementById("dHigh").textContent = high ? fmtDate(high.date) : "";
+  $("tLow").textContent = fmt(low?.min);
+  $("dLow").textContent = low ? fmtDate(low.date) : "";
+  $("tHigh").textContent = fmt(high?.min);
+  $("dHigh").textContent = high ? fmtDate(high.date) : "";
 
-  document.getElementById("rows").innerHTML = rows.slice().reverse().slice(0, 50).map(r =>
-    `<tr><td>${fmtDate(r.date)}</td><td>${fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td><td>${fmt(r.qte)}</td></tr>`
+  $("rows").innerHTML = rows.slice().reverse().slice(0, 50).map(r =>
+    `<tr><td>${fmtDate(r.date)}</td><td>${r.min === null ? "Pas en vente" : fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td><td>${fmt(r.qte)}</td></tr>`
   ).join("") || `<tr><td colspan="5" class="empty">Pas encore de relevé pour cet objet.</td></tr>`;
 
-  const labels = rows.map(r => fmtDate(r.date));
+  if (typeof Chart === "undefined") return;
   if (chart) chart.destroy();
-  chart = new Chart(document.getElementById("chart"), {
+  chart = new Chart($("chart"), {
     type: "line",
-    data: { labels, datasets: [
+    data: { labels: rows.map(r => fmtDate(r.date)), datasets: [
       { label: "Prix mini", data: rows.map(r => r.min), borderColor: "#e2b84a", backgroundColor: "#e2b84a", tension: .2, pointRadius: 2, spanGaps: true },
       { label: "Moyenne top 10", data: rows.map(r => r.avg), borderColor: "#6fa8dc", backgroundColor: "#6fa8dc", tension: .2, pointRadius: 2, spanGaps: true },
     ]},
@@ -143,42 +245,136 @@ function render() {
   });
 }
 
-function renderOverview(order) {
-  const q = (document.getElementById("filter").value || "").toLowerCase();
+function renderOverview() {
+  const q = ($("filter").value || "").toLowerCase();
+  const only = $("onlyFavs").checked;
   const last = new Map();
   for (const r of data) last.set(r.vnum, r);
   const rows = [...last.values()]
+    .filter(r => !only || isFav(r.vnum))
     .filter(r => !q || r.objet.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q))
-    .sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat) || a.objet.localeCompare(b.objet, "fr"));
-  document.getElementById("overview").innerHTML = rows.map(r =>
-    `<tr><td><a data-v="${r.vnum}">${r.objet}</a></td><td>${r.cat}</td>` +
-    (r.min === null ? `<td colspan="3" class="none">Pas en vente</td>` :
-      `<td>${fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td>`) +
-    `<td>${fmtDate(r.date)}</td></tr>`).join("");
-  document.querySelectorAll("#overview a").forEach(a => a.onclick = () => {
-    const sel = document.getElementById("item"); sel.value = a.dataset.v; render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+    .sort((a, b) => (isFav(b.vnum) - isFav(a.vnum)) || order.indexOf(a.cat) - order.indexOf(b.cat) || a.objet.localeCompare(b.objet, "fr"));
+  $("overview").innerHTML = rows.map(r => {
+    const on = isFav(r.vnum);
+    return `<tr><td><button class="star${on ? " on" : ""}" data-fav="${esc(r.vnum)}" aria-label="${on ? "Retirer des favoris" : "Ajouter aux favoris"}" title="${on ? "Retirer des favoris" : "Ajouter aux favoris"}">${on ? "★" : "☆"}</button>` +
+      `<a data-v="${esc(r.vnum)}">${esc(r.objet)}</a></td><td>${esc(r.cat)}</td>` +
+      (r.min === null ? `<td colspan="3" class="none">Pas en vente</td>` :
+        `<td>${fmt(r.min)}</td><td>${fmt(r.avg)}</td><td>${r.offres}</td>`) +
+      `<td>${fmtDate(r.date)}</td></tr>`;
+  }).join("") || `<tr><td colspan="6" class="empty">${only ? "Aucun favori pour l'instant : clique sur ☆ à côté d'un objet." : "Aucun objet ne correspond."}</td></tr>`;
 }
 
-fetch("data/prices.csv?t=" + Date.now()).then(r => r.text()).then(text => {
-  data = parseCSV(text);
-  const sub = document.getElementById("sub");
-  if (!data.length) { sub.textContent = "Aucun relevé pour l'instant : le premier arrivera au prochain passage du robot."; return; }
-  sub.textContent = `Serveur ${data.at(-1).serveur} · dernier relevé le ${fmtDate(data.at(-1).date)} · ${data.length} relevés`;
-  const items = [...new Map(data.map(r => [r.vnum, { n: r.objet, c: r.cat }])).entries()];
-  const groups = {};
-  for (const [v, x] of items) (groups[x.c] = groups[x.c] || []).push([v, x.n]);
-  const select = document.getElementById("item");
-  const order = Object.keys(groups).sort((a, b) => (a === "Suivi principal" ? -1 : b === "Suivi principal" ? 1 : a.localeCompare(b, "fr")));
-  select.innerHTML = order.map(c => `<optgroup label="${c}">` +
-    groups[c].sort((a, b) => a[1].localeCompare(b[1], "fr")).map(([v, n]) => `<option value="${v}">${n}</option>`).join("") +
-    `</optgroup>`).join("");
-  select.onchange = render;
-  render();
-  renderOverview(order);
-  document.getElementById("filter").oninput = () => renderOverview(order);
+$("overview").addEventListener("click", e => {
+  const star = e.target.closest("[data-fav]");
+  if (star) { toggleFav(star.dataset.fav); return; }
+  const a = e.target.closest("a[data-v]");
+  if (a) { $("item").value = a.dataset.v; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
 });
+$("itemStar").onclick = () => { if ($("item").value) toggleFav($("item").value); };
+$("item").onchange = render;
+$("filter").oninput = renderOverview;
+$("onlyFavs").onchange = renderOverview;
+
+function applyData(text) {
+  data = parseCSV(text);
+  const sub = $("sub");
+  if (!data.length) { sub.textContent = "Aucun relevé pour l'instant : le premier arrivera au prochain passage du robot."; return; }
+  sub.textContent = `Serveur ${data.at(-1).serveur} · dernier relevé le ${fmtDate(data.at(-1).date)} · ${data.length} relevés · relevé automatique chaque jour vers 15h`;
+  itemInfo = new Map(data.map(r => [r.vnum, { n: r.objet, c: r.cat }]));
+  buildSelect(); render(); renderOverview(); refreshButtons();
+}
+
+fetch("data/prices.csv?t=" + Date.now()).then(r => r.text()).then(applyData)
+  .catch(() => { $("sub").textContent = "Impossible de charger les relevés pour le moment."; });
+
+// ---------- bouton de mise à jour ----------
+const getToken = () => store.get("nb_token", "");
+let running = false;
+
+function setStatus(msg, kind) { const s = $("status"); s.textContent = msg; s.className = "status" + (kind ? " " + kind : ""); }
+
+function refreshButtons() {
+  const hasToken = !!getToken();
+  $("btnFavs").disabled = running || favs.size === 0;
+  $("btnAll").disabled = running;
+  $("btnFavs").textContent = favs.size ? `Mettre à jour mes favoris (${favs.size})` : "Mettre à jour mes favoris";
+  $("tokenState").textContent = hasToken ? "✓ Clé enregistrée dans ce navigateur." : "Aucune clé enregistrée : les boutons ouvriront la page GitHub pour lancer le relevé à la main.";
+  if (!running && !$("status").textContent) {
+    setStatus(favs.size ? "" : "Ajoute des favoris (☆) pour pouvoir les mettre à jour en quelques secondes.");
+  }
+}
+
+$("saveToken").onclick = () => {
+  const t = $("token").value.trim();
+  if (!t) return;
+  store.set("nb_token", t); $("token").value = "";
+  setStatus("Clé enregistrée. Tu peux lancer une mise à jour.", "ok"); refreshButtons();
+};
+$("forgetToken").onclick = () => { store.del("nb_token"); setStatus("Clé supprimée de ce navigateur."); refreshButtons(); };
+
+async function gh(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: { "Accept": "application/vnd.github+json", "Authorization": "Bearer " + getToken(),
+               "X-GitHub-Api-Version": "2022-11-28", ...(opts.headers || {}) },
+  });
+  if (!res.ok) {
+    const msg = res.status === 401 ? "clé invalide ou expirée" :
+                res.status === 403 || res.status === 404 ? "la clé n'a pas le droit « Actions : Read and write » sur ce dépôt" :
+                "erreur GitHub " + res.status;
+    throw new Error(msg);
+  }
+  return res.status === 204 ? null : res;
+}
+
+async function launch(mode) {
+  const objets = mode === "favs" ? [...favs].join(",") : "";
+  if (!getToken()) {
+    window.open(ACTIONS_PAGE, "_blank", "noopener");
+    setStatus(mode === "favs"
+      ? "Page GitHub ouverte : clique sur « Run workflow » et colle ces numéros dans le champ « objets » : " + objets
+      : "Page GitHub ouverte : clique sur « Run workflow », coche « Relever tous les objets », puis valide.");
+    $("setup").open = true;
+    return;
+  }
+  const lastRun = store.get("nb_last_run", 0);
+  if (Date.now() - lastRun < 2 * 60 * 1000) { setStatus("Un relevé vient d'être lancé, attends deux minutes avant d'en relancer un.", "err"); return; }
+
+  running = true; refreshButtons();
+  const started = new Date(Date.now() - 5000);
+  try {
+    setStatus("Lancement du relevé…");
+    await gh("/actions/workflows/track.yml/dispatches", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ref: "main", inputs: mode === "favs" ? { tout_relever: "false", objets } : { tout_relever: "true", objets: "" } }),
+    });
+    store.set("nb_last_run", Date.now());
+    const eta = mode === "favs" ? `environ ${Math.max(1, Math.ceil(favs.size * 6 / 60) + 1)} min` : "une quinzaine de minutes";
+    let run = null;
+    for (let i = 0; i < 180; i++) {             // jusqu'à ~45 min
+      await new Promise(r => setTimeout(r, 15000));
+      const res = await gh(`/actions/workflows/track.yml/runs?event=workflow_dispatch&per_page=5`);
+      const j = await res.json();
+      run = (j.workflow_runs || []).find(r => new Date(r.created_at) >= started) || run;
+      if (!run) { setStatus("Relevé en attente de démarrage chez GitHub…"); continue; }
+      if (run.status !== "completed") { setStatus(`Relevé en cours (${eta})… tu peux laisser cette page ouverte.`); continue; }
+      break;
+    }
+    if (!run || run.status !== "completed") throw new Error("le relevé prend plus de temps que prévu, recharge la page plus tard");
+    if (run.conclusion !== "success") throw new Error("le relevé a échoué, détails sur la page Actions de GitHub");
+    setStatus("Relevé terminé, chargement des nouveaux prix…");
+    const res = await gh("/contents/docs/data/prices.csv?ref=main", { headers: { "Accept": "application/vnd.github.raw" } });
+    applyData(await res.text());
+    setStatus("Prix à jour ✓", "ok");
+  } catch (err) {
+    setStatus("Échec : " + err.message + ".", "err");
+  } finally {
+    running = false; refreshButtons();
+  }
+}
+$("btnFavs").onclick = () => launch("favs");
+$("btnAll").onclick = () => launch("all");
+refreshButtons();
 </script>
 </body>
 </html>

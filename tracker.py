@@ -3,8 +3,8 @@
 - Chaque objet de items.json peut avoir plusieurs numéros (vnums) : versions
   différentes du même objet, ou toutes les couleurs d'une même aile. Le prix
   relevé est le plus bas parmi toutes ces versions.
-- "freq_h": 3  -> relevé à chaque passage (toutes les 3 h)
-  "freq_h": 24 -> relevé une seule fois par jour, au passage de "daily_hour_utc"
+- "favori": true -> relevé à chaque passage (toutes les 3 h)
+  sinon          -> relevé une seule fois par jour, au passage de "daily_hour_utc"
 
 Aucune dépendance externe : Python 3.9+ standard suffit.
 Usage : python tracker.py            (relevé normal)
@@ -90,8 +90,8 @@ def item_vnums(item: dict) -> list[int]:
 def is_due(item: dict, config: dict, now: datetime, force: bool) -> bool:
     if force:
         return True
-    freq = int(item.get("freq_h", 3))
-    if freq <= 3:
+    # les favoris sont relevés à chaque passage (toutes les 3 h)
+    if item.get("favori") or int(item.get("freq_h", 3)) <= 3:
         return True
     # relevé quotidien : seulement au passage qui tombe dans le créneau de 3 h
     start = int(config.get("daily_hour_utc", 6))

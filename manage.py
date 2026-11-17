@@ -1,6 +1,7 @@
 """Ajoute ou retire un objet de items.json à partir du titre d'une « issue » GitHub.
 
 Titres reconnus (créés par les boutons de la page de suivi) :
+  Favoris                     (corps : « objets : 13664,4600+4608,... »)
   Ajouter : <nom exact de l'objet sur NosBazar>
   Retirer : <numéros de l'objet, ex. 13664 ou 4600+4608>   (ou son nom)
 Le corps de l'issue peut contenir une ligne « Catégorie : Ailes ».
@@ -64,9 +65,35 @@ def search(name: str) -> list[dict]:
         return json.load(r).get("matches", [])
 
 
+def set_favorites(body: str) -> None:
+    """Corps attendu : une ligne « objets : 13664,4600+4608,... » (vide = aucun favori)."""
+    m = re.search(r"objets\s*:\s*([0-9+,\s]*)", body, re.I)
+    if not m:
+        done("❌ Liste de favoris introuvable dans la demande.", 2)
+    keys = {k.strip().replace(" ", "") for k in m.group(1).split(",") if k.strip()}
+    config = json.loads(ITEMS_FILE.read_text(encoding="utf-8"))
+    names, changed = [], 0
+    for it in config["items"]:
+        fav = key_of(it) in keys
+        if bool(it.get("favori")) != fav:
+            changed += 1
+        if fav:
+            it["favori"] = True
+            names.append(it["name"])
+        else:
+            it.pop("favori", None)
+    if not changed:
+        done("ℹ️ Tes favoris étaient déjà à jour.", 2)
+    save(config)
+    liste = "\n".join(f"- {n}" for n in sorted(names)) or "(aucun)"
+    done(f"✅ Favoris enregistrés ({len(names)}). Ils seront relevés toutes les 3 heures :\n\n{liste}", 0)
+
+
 def main() -> None:
     title = os.environ.get("TITLE", "").strip()
     body = os.environ.get("BODY", "") or ""
+    if re.match(r"^\s*favoris\b", title, re.I):
+        set_favorites(body)
     m = re.match(r"^\s*(ajouter|retirer)\s*:\s*(.+?)\s*$", title, re.I)
     if not m:
         done("Titre non reconnu. Utilise « Ajouter : nom de l'objet » ou « Retirer : numéros ».", 2)

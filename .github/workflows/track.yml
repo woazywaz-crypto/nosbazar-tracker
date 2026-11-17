@@ -2,9 +2,10 @@ name: Relevé des prix NosBazar
 
 on:
   schedule:
-    # Une fois par jour à 14:03 UTC, soit 15h03 en hiver et 16h03 en été (heure de Paris).
+    # Toutes les 3 heures (2h03, 5h03, … 23h03 UTC) : les favoris.
+    # Le passage de 14:03 UTC (15h03 l'hiver, 16h03 l'été à Paris) relève tous les objets.
     # GitHub peut décaler un peu les lancements planifiés.
-    - cron: "3 14 * * *"
+    - cron: "3 2-23/3 * * *"
   workflow_dispatch:
     inputs:
       tout_relever:

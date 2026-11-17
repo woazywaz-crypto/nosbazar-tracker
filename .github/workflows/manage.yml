@@ -19,7 +19,7 @@ jobs:
     # seulement les demandes du propriétaire du dépôt
     if: >-
       github.event.issue.user.login == github.repository_owner &&
-      (startsWith(github.event.issue.title, 'Ajouter') || startsWith(github.event.issue.title, 'Retirer'))
+      (startsWith(github.event.issue.title, 'Ajouter') || startsWith(github.event.issue.title, 'Retirer') || startsWith(github.event.issue.title, 'Favoris'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

@@ -74,6 +74,9 @@
   .manage .hint { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
   .rm { background: none; border: none; color: var(--muted); padding: 0 6px; font-size: 1rem; }
   .rm:hover { color: var(--up); }
+  .favsync { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 12px;
+             background: var(--panel); border: 1px solid var(--gold); border-radius: 8px; padding: 10px 14px; }
+  .favsync span { color: var(--text); font-size: .9rem; flex: 1 1 220px; }
 </style>
 </head>
 <body>
@@ -111,6 +114,10 @@
     <select id="item"></select>
     <button class="star" id="itemStar" title="Ajouter aux favoris" aria-label="Ajouter aux favoris">☆</button>
     <button class="primary" id="btnOne">Mettre à jour cet objet</button>
+  </div>
+  <div class="favsync" id="favSync" hidden>
+    <span id="favSyncText">Tes favoris ont changé.</span>
+    <button class="primary" id="btnFavSync">Enregistrer mes favoris sur GitHub</button>
   </div>
 
   <div class="tiles">
@@ -169,11 +176,15 @@ const store = {
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
 let favs = new Set(store.get("nb_favs", []));
+let favsDirty = store.get("nb_favs_dirty", false);   // modifiés ici mais pas encore enregistrés sur GitHub
+let repoFavs = null;                                  // favoris enregistrés sur GitHub
 const isFav = v => favs.has(v);
 function toggleFav(v) {
   favs.has(v) ? favs.delete(v) : favs.add(v);
   store.set("nb_favs", [...favs]);
-  buildSelect(); renderStar(); renderOverview(); refreshButtons();
+  favsDirty = !repoFavs || !sameSet(favs, repoFavs);
+  store.set("nb_favs_dirty", favsDirty);
+  buildSelect(); renderStar(); renderOverview(); refreshButtons(); renderFavSync();
 }
 
 let data = [], chart, order = [], itemInfo = new Map(), tracked = null; // tracked: Map clé -> {name, categorie}
@@ -313,9 +324,18 @@ function applyData(text) {
   data = parseCSV(text);
   const sub = $("sub");
   if (!data.length) { sub.textContent = "Aucun relevé pour l'instant : le premier arrivera au prochain passage du robot."; return; }
-  sub.textContent = `Serveur ${data.at(-1).serveur} · dernier relevé le ${fmtDate(data.at(-1).date)} · ${data.length} relevés · relevé automatique chaque jour vers 15h`;
+  sub.textContent = `Serveur ${data.at(-1).serveur} · dernier relevé le ${fmtDate(data.at(-1).date)} · ${data.length} relevés · favoris relevés toutes les 3 h, tous les objets chaque jour vers 15h`;
   itemInfo = new Map(data.map(r => [r.vnum, { n: r.objet, c: r.cat }]));
-  buildSelect(); render(); renderOverview(); refreshButtons();
+  buildSelect(); render(); renderOverview(); refreshButtons(); renderFavSync();
+}
+
+function sameSet(a, b) { return a.size === b.size && [...a].every(x => b.has(x)); }
+
+function renderFavSync() {
+  const box = $("favSync");
+  if (!favsDirty) { box.hidden = true; return; }
+  box.hidden = false;
+  $("favSyncText").textContent = `Tes favoris ont changé (${favs.size}) : enregistre-les pour qu'ils soient relevés toutes les 3 heures.`;
 }
 
 function loadTracked() {
@@ -324,7 +344,14 @@ function loadTracked() {
                { headers: { Accept: "application/vnd.github.raw" } })
     .then(r => r.ok ? r.json() : Promise.reject())
     .catch(() => fetch(RAW + "items.json?t=" + Date.now()).then(r => r.json()))
-    .then(j => { tracked = new Map(j.items.map(it => [it.vnums.join("+"), it])); })
+    .then(j => {
+      tracked = new Map(j.items.map(it => [it.vnums.join("+"), it]));
+      repoFavs = new Set(j.items.filter(it => it.favori).map(it => it.vnums.join("+")));
+      if (!favsDirty || sameSet(favs, repoFavs)) {          // GitHub fait foi s'il n'y a rien en attente
+        favs = new Set(repoFavs); favsDirty = false;
+        store.set("nb_favs", [...favs]); store.set("nb_favs_dirty", false);
+      }
+    })
     .catch(() => { tracked = null; });
 }
 Promise.all([loadTracked(), fetch("data/prices.csv?t=" + Date.now()).then(r => r.text())])
@@ -358,6 +385,12 @@ $("btnAdd").onclick = () => {
   $("addHint").innerHTML = `Demande d'ajout de <b>${esc(name)}</b> ouverte sur GitHub : clique sur le bouton vert <b>« Create »</b>. Recharge cette page dans une à deux minutes.`;
   $("addName").value = "";
 };
+$("btnFavSync").onclick = () => {
+  openRequest("Favoris", "objets : " + [...favs].join(",") +
+    "\n\n(Demande créée depuis la page de suivi. Clique sur « Create » pour valider.)");
+  $("favSyncText").innerHTML = "Demande ouverte sur GitHub : clique sur le bouton vert <b>« Create »</b>. Recharge cette page dans une minute.";
+};
+
 function removeItem(key, name) {
   if (!confirm(`Retirer « ${name} » du suivi ?\n(Son historique de prix est conservé.)`)) return;
   openRequest("Retirer : " + key, "Objet : " + name +

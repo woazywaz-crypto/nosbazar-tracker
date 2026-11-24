@@ -1,0 +1,39 @@
+name: Mettre à jour le bot Discord
+
+# Met en ligne le bot (Cloudflare) et déclare ses commandes à Discord
+# à chaque modification du dossier discord-bot/, ou à la main depuis l'onglet Actions.
+on:
+  push:
+    branches: [main]
+    paths: ["discord-bot/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mettre en ligne sur Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: fa63c71101dfc7b00bb3ff77faafc1b5
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "Secret CLOUDFLARE_API_TOKEN manquant : étape ignorée."; exit 0; fi
+          npx --yes wrangler@4 deploy discord-bot/worker.js --name nosbazar-bot \
+            --compatibility-date 2025-01-01 --keep-vars
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Déclarer les commandes à Discord
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        run: |
+          if [ -z "$DISCORD_TOKEN" ]; then echo "Secret DISCORD_TOKEN manquant : étape ignorée."; exit 0; fi
+          python discord-bot/ajouter_commandes.py

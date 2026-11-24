@@ -13,6 +13,9 @@ ROOT = Path(__file__).parent
 
 
 def lire_token() -> str:
+    import os
+    if os.environ.get("DISCORD_TOKEN"):
+        return os.environ["DISCORD_TOKEN"].strip()
     for nom in (".env", ".env.txt"):
         f = ROOT / nom
         if f.exists():

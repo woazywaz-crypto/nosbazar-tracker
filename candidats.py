@@ -19,6 +19,10 @@ MOTS = [
     "Minifamilier", "Tapis volant", "Planche", "Titre",
 ]
 
+import os
+if os.environ.get("MOTS"):
+    MOTS = [m.strip() for m in os.environ["MOTS"].split(";") if m.strip()]
+
 def get(url, data=None):
     req = urllib.request.Request(url, data=json.dumps(data).encode() if data else None,
                                  headers={"Content-Type": "application/json",

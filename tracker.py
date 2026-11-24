@@ -98,6 +98,27 @@ def is_due(item: dict, config: dict, now: datetime, force: bool) -> bool:
     return start <= now.hour < start + 3
 
 
+def last_full_run(config: dict):
+    """Date du dernier relevé d'un objet non favori (= dernier relevé complet)."""
+    if not CSV_FILE.exists():
+        return None
+    others = {"+".join(str(v) for v in item_vnums(it))
+              for it in config["items"] if not it.get("favori") and int(it.get("freq_h", 24)) > 3}
+    if not others:
+        return None
+    counts: dict[str, int] = {}
+    with CSV_FILE.open(encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if row.get("vnum") in others:
+                counts[row["date_utc"]] = counts.get(row["date_utc"], 0) + 1
+    # un passage compte comme complet s'il a relevé au moins la moitié des objets
+    full = [d for d, n in counts.items() if n >= len(others) / 2]
+    if not full:
+        return None
+    last = max(full)
+    return datetime.strptime(last, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+
+
 def main() -> int:
     config = json.loads(ITEMS_FILE.read_text(encoding="utf-8"))
     server = config["server"]
@@ -113,6 +134,13 @@ def main() -> int:
                if "+".join(str(v) for v in item_vnums(it)) in only][:60]
     else:
         due = [it for it in config["items"] if is_due(it, config, now_dt, force)]
+        # rattrapage : si le relevé complet du jour a sauté (GitHub annule parfois
+        # un lancement planifié), on relève tout au passage suivant
+        if not force and len(due) < len(config["items"]):
+            last_full = last_full_run(config)
+            if last_full is None or (now_dt - last_full).total_seconds() > 22 * 3600:
+                print(f"Rattrapage : dernier relevé complet le {last_full}, on relève tout.")
+                due = list(config["items"])
     print(f"{len(due)} objet(s) à relever sur {len(config['items'])}")
 
     CSV_FILE.parent.mkdir(parents=True, exist_ok=True)

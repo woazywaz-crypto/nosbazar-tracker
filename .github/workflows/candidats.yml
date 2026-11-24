@@ -1,0 +1,30 @@
+name: Chercher de nouveaux objets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: releve-prix
+  cancel-in-progress: false
+
+jobs:
+  chercher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python candidats.py
+      - name: Enregistrer
+        run: |
+          git config user.name "nosbazar-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/candidats.json
+          git diff --cached --quiet || git commit -m "Objets candidats"
+          git pull --rebase
+          git push

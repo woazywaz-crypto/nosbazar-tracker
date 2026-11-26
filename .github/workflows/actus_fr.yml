@@ -1,0 +1,26 @@
+name: Annonces NosTale FR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  actus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python actus_fr.py
+      - name: Enregistrer
+        run: |
+          git config user.name "nosbazar-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/actus_fr.json docs/data/actus_fr_brut.json
+          git diff --cached --quiet || git commit -m "Annonces NosTale FR"
+          git pull --rebase
+          git push

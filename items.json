@@ -107,6 +107,25 @@
     {"name": "Ailes de l'apôtre dimensionnel (permanent)", "categorie": "Ailes", "vnums": [8888], "freq_h": 24},
     {"name": "Ailes de voltigénieur (permanent)", "categorie": "Ailes", "vnums": [4683, 8493], "freq_h": 24},
     {"name": "Boite à carte de spécialiste en or scellée", "categorie": "Coffre / boîte", "vnums": [13811], "freq_h": 24},
-    {"name": "Boîte à carte de spécialiste en or", "categorie": "Coffre / boîte", "vnums": [4240], "freq_h": 24}
+    {"name": "Boîte à carte de spécialiste en or", "categorie": "Coffre / boîte", "vnums": [4240], "freq_h": 24},
+    {"name": "Amulette de la bénédiction", "categorie": "Amulette / parchemin", "vnums": [282], "freq_h": 24},
+    {"name": "Amulette en bronze de hausse du niveau de rareté", "categorie": "Amulette / parchemin", "vnums": [4263], "freq_h": 24},
+    {"name": "Amulette héroïque de hausse du niveau de rareté", "categorie": "Amulette / parchemin", "vnums": [4261], "freq_h": 24},
+    {"name": "Amélioration de coquillage divine", "categorie": "Consommable / autre", "vnums": [13590], "freq_h": 24},
+    {"name": "Enclume runique de réparation", "categorie": "Consommable / autre", "vnums": [5811], "freq_h": 24},
+    {"name": "Lot gommant de fée", "categorie": "Consommable / autre", "vnums": [9994], "freq_h": 24},
+    {"name": "Marteau d'effacement runique", "categorie": "Consommable / autre", "vnums": [5812], "freq_h": 24},
+    {"name": "Marteau à réinitialiser les fées", "categorie": "Consommable / autre", "vnums": [13218], "freq_h": 24},
+    {"name": "Modificateur de fée", "categorie": "Consommable / autre", "vnums": [13201], "freq_h": 24},
+    {"name": "Médaille NosMarchand (30 jours)", "categorie": "Consommable / autre", "vnums": [5060, 9066], "freq_h": 24},
+    {"name": "Outil doré", "categorie": "Consommable / autre", "vnums": [13202], "freq_h": 24},
+    {"name": "Parchemin de protection de fée", "categorie": "Amulette / parchemin", "vnums": [13200], "freq_h": 24},
+    {"name": "Parchemin héroïque de la bénédiction aléatoire", "categorie": "Amulette / parchemin", "vnums": [13789, 13802, 13814, 13839], "freq_h": 24},
+    {"name": "Ticket d'amélioration : compétence du partenaire", "categorie": "Consommable / autre", "vnums": [13255], "freq_h": 24},
+    {"name": "Perle de fée", "categorie": "Consommable / autre", "vnums": [4194], "freq_h": 24},
+    {"name": "Perle de partenaire", "categorie": "Consommable / autre", "vnums": [286], "freq_h": 24},
+    {"name": "Vernis runique", "categorie": "Consommable / autre", "vnums": [9771], "freq_h": 24},
+    {"name": "Verrouillage d'effet de fée", "categorie": "Consommable / autre", "vnums": [13252], "freq_h": 24},
+    {"name": "Zephyr Wings", "categorie": "Ailes", "vnums": [5702, 9137], "freq_h": 24}
   ]
 }

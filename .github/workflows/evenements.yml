@@ -2,6 +2,11 @@ name: Objets des événements NosMall
 
 on:
   workflow_dispatch:
+    inputs:
+      noms:
+        default: docs/data/event_noms.json
+      sortie:
+        default: docs/data/event_objets.json
 
 permissions:
   contents: write
@@ -20,11 +25,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: python evenements.py
+        env:
+          NOMS: ${{ inputs.noms }}
+          SORTIE: ${{ inputs.sortie }}
       - name: Enregistrer
         run: |
           git config user.name "nosbazar-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/data/event_objets.json
+          git add docs/data/event_objets*.json
           git diff --cached --quiet || git commit -m "Objets des événements"
           git pull --rebase
           git push

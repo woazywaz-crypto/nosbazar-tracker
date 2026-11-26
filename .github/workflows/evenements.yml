@@ -18,13 +18,13 @@ concurrency:
 jobs:
   chercher:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 200
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python evenements.py
+      - run: timeout 170m python evenements.py || true
         env:
           NOMS: ${{ inputs.noms }}
           SORTIE: ${{ inputs.sortie }}

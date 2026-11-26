@@ -51,7 +51,9 @@ def main():
         prix = sorted(l["bazar_price"] for l in offres)
         out.append({"en": n["en"], "fr": frn, "uk": pick[0]["name"], "vnums": vnums, "sources": n["sources"],
                     "min": prix[0] if prix else None, "moyenne": round(mean(prix[:10])) if prix else None, "offres": len(offres)})
-        print(f"[{i}] {n['en']} -> {frn} {vnums}: {prix[0] if prix else '-'} ({len(offres)})")
+        print(f"[{i}] {n['en']} -> {frn} {vnums}: {prix[0] if prix else '-'} ({len(offres)})", flush=True)
+        if len(out) % 20 == 0:
+            (ROOT / os.environ.get("SORTIE", "docs/data/event_objets.json")).write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
         time.sleep(2)
     (ROOT / os.environ.get("SORTIE", "docs/data/event_objets.json")).write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(len(out), "objets trouvés")

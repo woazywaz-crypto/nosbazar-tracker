@@ -1,48 +1,98 @@
 [
  {
-  "name": "Anneau de pleine lune",
-  "vnums": [
-   781
-  ],
-  "mot": "pleine lune",
-  "min": 27000,
-  "moyenne": 53198699,
-  "offres": 10,
-  "quantite": 10
- },
- {
-  "name": "Bracelet de pleine lune",
-  "vnums": [
-   779
-  ],
-  "mot": "pleine lune",
-  "min": 61000,
-  "moyenne": 88317,
-  "offres": 7,
-  "quantite": 7
- },
- {
-  "name": "Coffre du hasard des cristaux de pleine lune",
-  "vnums": [
-   5825
-  ],
-  "mot": "pleine lune",
-  "min": 1989000,
-  "moyenne": 2096332,
-  "offres": 3,
-  "quantite": 501
- },
- {
   "name": "Cristal de pleine lune",
   "vnums": [
    1030,
    9131
   ],
-  "mot": "pleine lune",
-  "min": 9998,
-  "moyenne": 10370,
+  "mot": "cristal de pleine lune",
+  "min": 9994,
+  "moyenne": 10051,
   "offres": 30,
-  "quantite": 24075
+  "quantite": 22679
+ },
+ {
+  "name": "Parchemin protecteur de carte draconique",
+  "vnums": [
+   9287,
+   9465
+  ],
+  "mot": "protecteur de carte draconique",
+  "min": 725999,
+  "moyenne": 733700,
+  "offres": 28,
+  "quantite": 13865
+ },
+ {
+  "name": "Parchemin protecteur inférieur pour carte de spécialiste",
+  "vnums": [
+   1363,
+   9463
+  ],
+  "mot": "protecteur inférieur pour carte",
+  "min": 189000,
+  "moyenne": 194798,
+  "offres": 19,
+  "quantite": 3353
+ },
+ {
+  "name": "Parchemin protecteur inférieur pour carte de spécialiste (premium)",
+  "vnums": [
+   9497,
+   9924
+  ],
+  "mot": "protecteur inférieur pour carte",
+  "min": 129998,
+  "moyenne": 137349,
+  "offres": 30,
+  "quantite": 7507
+ },
+ {
+  "name": "Parchemin protecteur pour carte draconique (premium)",
+  "vnums": [
+   9499,
+   9926
+  ],
+  "mot": "protecteur pour carte draconique",
+  "min": 3898899,
+  "moyenne": 3960977,
+  "offres": 30,
+  "quantite": 2736
+ },
+ {
+  "name": "Parchemin protecteur supérieur pour carte de spécialiste",
+  "vnums": [
+   1364,
+   9464
+  ],
+  "mot": "protecteur supérieur pour carte",
+  "min": 603794,
+  "moyenne": 614627,
+  "offres": 30,
+  "quantite": 12802
+ },
+ {
+  "name": "Parchemin protecteur supérieur pour carte de spécialiste (premium)",
+  "vnums": [
+   9498,
+   9925
+  ],
+  "mot": "protecteur supérieur pour carte",
+  "min": 1943330,
+  "moyenne": 1959841,
+  "offres": 25,
+  "quantite": 3968
+ },
+ {
+  "name": "Pierre précieuse draconique",
+  "vnums": [
+   2630
+  ],
+  "mot": "pierre précieuse draconique",
+  "min": 14394,
+  "moyenne": 17395,
+  "offres": 30,
+  "quantite": 17519
  },
  {
   "name": "Plume d'ange",
@@ -50,9 +100,9 @@
    2282
   ],
   "mot": "plume d'ange",
-  "min": 25699,
-  "moyenne": 25735,
+  "min": 25697,
+  "moyenne": 25698,
   "offres": 30,
-  "quantite": 28162
+  "quantite": 25159
  }
 ]

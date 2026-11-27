@@ -3,6 +3,8 @@ name: Chercher de nouveaux objets
 on:
   workflow_dispatch:
     inputs:
+      tous:
+        default: ''
       mots:
         description: "Mots-clés séparés par ; (vide = liste par défaut)"
         required: false
@@ -27,6 +29,7 @@ jobs:
       - run: python candidats.py
         env:
           MOTS: ${{ inputs.mots }}
+          TOUS: ${{ inputs.tous }}
       - name: Enregistrer
         run: |
           git config user.name "nosbazar-bot"

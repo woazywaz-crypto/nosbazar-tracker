@@ -39,7 +39,7 @@ def get(url, data=None):
 
 def main():
     config = json.loads((ROOT / "items.json").read_text(encoding="utf-8"))
-    suivis = {v for it in config["items"] for v in it["vnums"]}
+    suivis = set() if os.environ.get("TOUS") else {v for it in config["items"] for v in it["vnums"]}
     noms = {}
     for mot in MOTS:
         res = get("https://nosbazar.com/api/items/name-search?" +
